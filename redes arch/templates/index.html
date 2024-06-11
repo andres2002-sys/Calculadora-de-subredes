@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Subredes</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .logo-left {
+            position: relative;
+            top: 10px;
+            left: 10px;
+            width: 150px;
+            cursor: pointer;
+        }
+        .logo-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 250px;
+            cursor: pointer;
+        }
+        .dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .dark-mode .table {
+            background-color: #2c2c2c;
+        }
+        .dark-mode .table th, .dark-mode .table td {
+            color: #ffffff;
+        }
+        .dark-mode .btn-dark {
+            background-color: #ffffff;
+            color: #121212;
+        }
+        .btn-modo-nocturno {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            padding: 0;
+            line-height: 40px;
+        }
+        .btn-limpiar {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background-color: rgb(235, 242, 235);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            line-height: 50px;
+            cursor: pointer;
+        }
+        .logos {
+            display: flex;
+            justify-content: space-between;
+        }
+        @media (max-width: 767px) {
+            .logo-left {
+                width: 80px;
+            }
+            .logo-right {
+                width: 120px;
+            }
+            .btn-modo-nocturno {
+                left: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logos">
+        <a href="https://www.unicesar.edu.co/" target="_blank"><img src="{{ url_for('static', filename='logo1.png') }}" alt="Logo Izquierdo" class="logo-left"></a>
+        <a href="https://sistemas.unicesar.edu.co/index.php/es/" target="_blank"><img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo Derecho" class="logo-right"></a>
+    </div>
+    <button id="btn-modo-nocturno" class="btn btn-dark btn-modo-nocturno"><span id="icono-modo">🌙</span></button>
+    <button id="btn-limpiar" class="btn-limpiar">🧹</button> 
+    <div class="container mt-5">
+        <h1 class="text-center">Calculadora de Subredes</h1>
+        <div class="mb-5 text-center">
+            <button id="btn-calcular" class="btn btn-primary">Calcular Red</button>
+            <button id="btn-identificar" class="btn btn-secondary">Identificar Red</button>
+        </div>
+
+        <div id="calcular-section" style="display: none;">
+            <form id="form-subredes" class="mb-5">
+                <div class="form-group">
+                    <label for="ip">Dirección IP:</label>
+                    <input type="text" class="form-control" id="ip" name="ip" required>
+                </div>
+                <div class="form-group">
+                    <label for="num_subredes">Número de Subredes:</label>
+                    <input type="number" class="form-control" id="num_subredes" name="num_subredes" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Calcular Subredes</button>
+                <button id="btn-imprimir" type="button" class="btn btn-success">Imprimir</button>
+            </form>
+            <table class="table table-bordered" id="tabla-resultados">
+                <thead>
+                    <tr>
+                        <th>Subred</th>
+                        <th>IP Inicial</th>
+                        <th>IP Final</th>
+                        <th>Máscara</th>
+                        <th>Máscara (Binario)</th>
+                        <th>Número de Hosts</th>
+                        <th>Clase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="identificar-section" style="display: none;">
+            <form id="form-identificar" class="mb-5">
+                <div class="form-group">
+                    <label for="subred">Subred Específica:</label>
+                    <input type="text" class="form-control" id="subred" name="subred" required>
+                </div>
+                <div class="form-group">
+                    <label for="cidr">CIDR:</label>
+                    <input type="number" class="form-control" id="cidr" name="cidr" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Identificar Red</button>
+                <button id="btn-imprimir-identificar" type="button" class="btn btn-success">Imprimir</button>
+            </form>
+            <table class="table table-bordered" id="tabla-identificar">
+                <thead>
+                    <tr>
+                        <th>Red</th>
+                        <th>IP Inicial</th>
+                        <th>IP Final</th>
+                        <th>Máscara (Decimal)</th>
+                        <th>Máscara (Binario)</th>
+                        <th>Número de Hosts</th>
+                        <th>Clase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col text-left">
+                    <p>Dirigido por:</p>
+                    <a href="https://sistemas.unicesar.edu.co/index.php/es/component/tlpteam/team/augusto-alberto-david-meza">ING Augusto Alberto David Meza</a>
+                </div>
+                <div class="col text-right">
+                    <p>Realizado por: Andres Trespalacios</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            $('#btn-calcular').click(function() {
+                $('#calcular-section').show();
+                $('#identificar-section').hide();
+            });
+
+            $('#btn-identificar').click(function() {
+                $('#calcular-section').hide();
+                $('#identificar-section').show();
+            });
+
+            $('#btn-modo-nocturno').click(function() {
+                $('body').toggleClass('dark-mode');
+                if ($('body').hasClass('dark-mode')) {
+                    $('#icono-modo').text('☀️');
+                } else {
+                    $('#icono-modo').text('🌙');
+                }
+            });
+
+            $('#form-subredes').on('submit', function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: '/calcular_subredes',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        var tbody = $('#tabla-resultados tbody');
+                        tbody.empty();
+                        if (response.error) {
+                            alert(response.error);
+                        } else {
+                            response.forEach(function(subred) {
+                                var row = '<tr>' +
+                                    '<td>' + subred.subred + '</td>' +
+                                    '<td>' + subred.ip_inicial + '</td>' +
+                                    '<td>' + subred.ip_final + '</td>' +
+                                    '<td>' + subred.mascara + '</td>' +
+                                    '<td>' + subred.mascara_binario + '</td>' +
+                                    '<td>' + subred.num_hosts + '</td>' +
+                                    '<td>' + subred.clase + '</td>' +
+                                    '</tr>';
+                                tbody.append(row);
+                            });
+                        }
+                    }
+                });
+            });
+
+            $('#form-identificar').on('submit', function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: '/identificar_red',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        var tbody = $('#tabla-identificar tbody');
+                        tbody.empty();
+                        if (response.error) {
+                            alert(response.error);
+                        } else {
+                            response.forEach(function(info) {
+                                var row = '<tr>' +
+                                    '<td>' + info.red + '</td>' +
+                                    '<td>' + info.ip_inicial + '</td>' +
+                                    '<td>' + info.ip_final + '</td>' +
+                                    '<td>' + info.mascara_decimal + '</td>' +
+                                    '<td>' + info.mascara_binario + '</td>' +
+                                    '<td>' + info.num_hosts + '</td>' +
+                                    '<td>' + info.clase + '</td>' +
+                                    '</tr>';
+                                tbody.append(row);
+                            });
+                        }
+                    }
+                });
+            });
+
+            $('#btn-imprimir').click(function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Agregar logos
+                const logoLeft = document.querySelector('.logo-left').src;
+                const logoRight = document.querySelector('.logo-right').src;
+                doc.addImage(logoLeft, 'PNG', 10, 10, 40, 20);
+                doc.addImage(logoRight, 'PNG', 130, 10, 70, 15);
+
+                // Título
+                doc.setFontSize(18);
+                doc.text('Resultado de la Calculadora de Subredes', 20, 50);
+
+                // Agregar tabla
+                const headers = [['Subred', 'IP Inicial', 'IP Final', 'Máscara', 'Máscara (Binario)', 'Número de Hosts', 'Clase']];
+                const data = [];
+
+                $('#tabla-resultados tbody tr').each(function() {
+                    const row = [];
+                    $(this).find('td').each(function() {
+                        row.push($(this).text());
+                    });
+                    data.push(row);
+                });
+
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: 60,
+                });
+
+                // Footer
+                doc.setFontSize(12);
+                doc.text('Dirigido por el Ing. Augusto David', 10, doc.internal.pageSize.height - 20);
+                doc.text('Realizado por Andres Trespalacios', 10, doc.internal.pageSize.height - 10);
+
+                doc.save('resultado_calculadora_subredes.pdf');
+            });
+
+            $('#btn-imprimir-identificar').click(function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Agregar logos
+                const logoLeft = document.querySelector('.logo-left').src;
+                const logoRight = document.querySelector('.logo-right').src;
+                doc.addImage(logoLeft, 'PNG', 10, 10, 40, 20);
+                doc.addImage(logoRight, 'PNG', 130, 10, 70, 15);
+
+                // Título
+                doc.setFontSize(18);
+                doc.text('Resultado de Identificación de Red', 20, 50);
+
+                // Agregar tabla
+                const headers = [['Red', 'IP Inicial', 'IP Final', 'Máscara (Decimal)', 'Máscara (Binario)', 'Número de Hosts', 'Clase']];
+                const data = [];
+
+                $('#tabla-identificar tbody tr').each(function() {
+                    const row = [];
+                    $(this).find('td').each(function() {
+                        row.push($(this).text());
+                    });
+                    data.push(row);
+                });
+
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: 60,
+                });
+
+                // Footer
+                doc.setFontSize(12);
+                doc.text('Dirigido por el Ing. Augusto David', 10, doc.internal.pageSize.height - 20);
+                doc.text('Realizado por Andres Trespalacios', 10, doc.internal.pageSize.height - 10);
+
+                doc.save('resultado_identificacion_red.pdf');
+            });
+
+            $('#btn-limpiar').click(function() {
+            $('#calcular-section').hide();
+            $('#identificar-section').hide();
+            $('#tabla-resultados tbody').empty();
+            $('#tabla-identificar tbody').empty();
+            $('#ip').val('');
+            $('#num_subredes').val('');
+            $('#subred').val(''); 
+            $('#cidr').val('');
+            });
+        });
+    </script>
+</body>
+</html>
